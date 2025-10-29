@@ -1,11 +1,9 @@
-// src/middlewares/auth.middleware.js
 const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this';
 
 const authMiddleware = (req, res, next) => {
   try {
-    // Pegar token do header
     const authHeader = req.headers.authorization;
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -15,12 +13,10 @@ const authMiddleware = (req, res, next) => {
       });
     }
 
-    const token = authHeader.substring(7); // Remove "Bearer "
+    const token = authHeader.substring(7);
 
-    // Verificar token
     const decoded = jwt.verify(token, JWT_SECRET);
     
-    // Adicionar dados do usuário ao request
     req.user = decoded;
     
     next();

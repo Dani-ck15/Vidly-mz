@@ -1,4 +1,3 @@
-// src/controllers/auth.controller.js
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const supabase = require('../config/database');
@@ -7,12 +6,10 @@ const { v4: uuidv4 } = require('uuid');
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-this';
 const JWT_EXPIRES = '7d';
 
-// Registrar novo usuário
 exports.register = async (req, res) => {
   try {
     const { email, password, username, full_name } = req.body;
 
-    // Validação básica
     if (!email || !password || !username) {
       return res.status(400).json({ 
         success: false, 
@@ -20,7 +17,6 @@ exports.register = async (req, res) => {
       });
     }
 
-    // Verificar se usuário já existe
     const { data: existingUser } = await supabase
       .from('users')
       .select('id')
@@ -34,10 +30,8 @@ exports.register = async (req, res) => {
       });
     }
 
-    // Hash da senha
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Criar usuário
     const { data: newUser, error } = await supabase
       .from('users')
       .insert([{
@@ -53,7 +47,6 @@ exports.register = async (req, res) => {
 
     if (error) throw error;
 
-    // Gerar token JWT
     const token = jwt.sign(
       { userId: newUser.id, email: newUser.email },
       JWT_SECRET,
@@ -79,7 +72,6 @@ exports.register = async (req, res) => {
   }
 };
 
-// Login
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -91,7 +83,6 @@ exports.login = async (req, res) => {
       });
     }
 
-    // Buscar usuário
     const { data: user, error } = await supabase
       .from('users')
       .select('*')
@@ -105,7 +96,6 @@ exports.login = async (req, res) => {
       });
     }
 
-    // Verificar senha
     const isValidPassword = await bcrypt.compare(password, user.password_hash);
     
     if (!isValidPassword) {
@@ -115,14 +105,12 @@ exports.login = async (req, res) => {
       });
     }
 
-    // Gerar token
     const token = jwt.sign(
       { userId: user.id, email: user.email },
       JWT_SECRET,
       { expiresIn: JWT_EXPIRES }
     );
 
-    // Remover senha do objeto de resposta
     delete user.password_hash;
 
     res.json({
@@ -144,7 +132,6 @@ exports.login = async (req, res) => {
   }
 };
 
-// Verificar token
 exports.verifyToken = async (req, res) => {
   try {
     const { data: user } = await supabase
